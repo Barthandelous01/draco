@@ -1,0 +1,4 @@
+*.fasl
+*.fas
+*.o
+.DS_Store
