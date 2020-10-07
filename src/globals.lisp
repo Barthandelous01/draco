@@ -9,9 +9,10 @@
    :*db*
    :*command-list*
    :+plugin-folder+
-   :+bin-folder+  ;bin may be unnecessary
+   :+binary-folder+  ;bin may be unnecessary
    :+plugin-file+
    :+prompt+
+   :*current-filename*
    :+db-file+)
   (:nicknames :globals))
 (in-package :globals)
@@ -31,7 +32,7 @@
 (defparameter +db-file+ (concatenate 'string +config-folder+ "/draco.db")
   "The file where the sqlite db lives")
 
-(defparameter +prompt+ "~$ "
+(defparameter +prompt+ " $ "
   "The prompt for the CLI")
 
 (defvar *current-file* ""
@@ -40,6 +41,9 @@
 
 (defvar *db* nil
   "The live db.")
+
+(defvar *current-filename* ""
+  "The name of the current project")
 
 (defvar *command-list* '()
   "The list of commands that the cli checks for.")
