@@ -24,9 +24,9 @@
   (setf globals:*command-list*
 	(push `("help" ,#'help "prints this message") globals:*command-list*))
   (setf globals:*command-list*
-	(push `("open" ,#'open-project "opens a new project") globals:*command-list*))
+	(push `("open" ,#'open-project "[name]: opens a new project") globals:*command-list*))
   (setf globals:*command-list*
-	(push `("new" ,#'new-project "starts a new project") globals:*command-list*))
+	(push `("new" ,#'new-project "[name] [path]: starts a new project") globals:*command-list*))
   (setf globals:*command-list*
 	(push `("quit" ,#'(lambda (_) (error "quiting")) "quits draco") globals:*command-list*)))
 
