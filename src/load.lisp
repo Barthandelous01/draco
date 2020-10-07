@@ -26,7 +26,7 @@
   "Runs init on all of the plugins in plugin-list"
   (loop for y in plugins do
     (progn
-      (load (concatenate 'string globals:+plugin-folder+ (symbol-name y) ".lisp"))
+      (load (concatenate 'string globals:+plugin-folder+ "/" (symbol-name y) ".lisp"))
       (loop for x in (all-function-symbols y)
 	    do (if (string= x 'init)
 		   (setf globals:*command-list*

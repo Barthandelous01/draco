@@ -4,12 +4,14 @@
 
 (defpackage :barthandelous.globals
   (:use :cl)
-  (:export :*current-file*
-	   :*db*
-	   :*command-list*
-	   :+plugin-folder+
-	   :+bin-folder+  ;bin may be unnecessary
-	   :+plugin-file+)
+  (:export
+   :*current-file*
+   :*db*
+   :*command-list*
+   :+plugin-folder+
+   :+bin-folder+  ;bin may be unnecessary
+   :+plugin-file+
+   :+db-file+)
   (:nicknames :globals))
 (in-package :globals)
 
@@ -32,7 +34,7 @@
   "This is the currently open file. Used by plugins to run commands on
    the current file being analized.")
 
-(defvar *db* (sqlite:connect +db-file+)
+(defvar *db* nil
   "The live db.")
 
 (defvar *command-list* '()
