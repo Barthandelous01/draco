@@ -11,6 +11,7 @@
    :+plugin-folder+
    :+bin-folder+  ;bin may be unnecessary
    :+plugin-file+
+   :+prompt+
    :+db-file+)
   (:nicknames :globals))
 (in-package :globals)
@@ -29,6 +30,9 @@
 
 (defparameter +db-file+ (concatenate 'string +config-folder+ "/draco.db")
   "The file where the sqlite db lives")
+
+(defparameter +prompt+ "~$ "
+  "The prompt for the CLI")
 
 (defvar *current-file* ""
   "This is the currently open file. Used by plugins to run commands on

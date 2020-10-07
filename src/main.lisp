@@ -7,6 +7,7 @@
 ;;; util functions for the cli
 
 (defun init-commands ()
+  "This is a hackish way to set this up, but it's the only reasonable way."
   (setf globals:*command-list*
 	(push `("help" ,#'help "prints this message") globals:*command-list*))
   (setf globals:*command-list*
@@ -14,7 +15,7 @@
   (setf globals:*command-list*
 	(push `("new" ,#'new-project "starts a new project") globals:*command-list*))
   (setf globals:*command-list*
-	(push `("quit" ,#'uiop:quit "quits draco") globals:*command-list*)))
+	(push `("quit" ,#'(lambda (_) (error "quiting")) "quits draco") globals:*command-list*)))
 
 (defun words (string)
   "An internet-based equivalent to haskell's 'words' function"
@@ -24,13 +25,17 @@
         while j))
 
 (defun cli-loop ()
-					;  (loop
-  (let* ((line (words (read-line)))
-	 (command (first line))
-	 (args (rest line)))
-    (loop for x in globals:*command-list* do
-	  (if (string= (first x) command)
-	      (funcall (second x) args)))));)
+  (handler-case
+      (loop
+	(format t "~&~a" globals:+prompt+)
+	(finish-output)
+	(let* ((line (words (read-line)))
+	       (command (first line))
+	       (args (rest line)))
+	  (loop for x in globals:*command-list* do
+	    (if (string= (first x) command)
+		(funcall (second x) args))))))
+  (error () (error "exiting")))
 
 
 ;;; builtin functions for draco itself. These could be implimented as plugins,
@@ -38,30 +43,35 @@
 (defun help (_)
   "This prints help for all loaded plugins and builtin commands"
   (loop for y in globals:*command-list* do
-	(format t "~a: ~a~&" (first y) (third y))))
+    (format t "~a: ~a~&" (first y) (third y))))
 
 (defun open-project (args)
   "This basically loads the 'current file' variable from the sqlite db"
-  (setf globals:*current-file*
-	(sqlite:execute-single globals:*db* "select FILEPATH from files where name = ?"
-			       (first args))))
+  (let ((file
+	  (sqlite:execute-single globals:*db* "select FILEPATH from files where name = ?" (first args))))
+    (if  (null file)
+	 (format t "~&Unable to open project '~a'" (first args))
+	 (setf globals:*current-file* file))))
+
 
 (defun new-project (_)
-  (format t "working for the moment"))
+  (format t "working for the moment~&")
+  (finish-output))
 
 (defun main ()
   "The main function. Runs the main loop, plus some init and shutdown."
   (unwind-protect
-      (progn
-	(init-commands)
-	(setf globals:*db* (sqlite:connect globals:+db-file+))
-	(sqlite:execute-non-query globals:*db*
-				  "create table if not exists files (
-             ID        INTEGER PRIMARY KEY AUTOINCREMENT,
-             NAME      TEXT NOT NULL,
-             FILEPATH  TEXT NOT NULL);")
-	(loading:load-all-plugins (loading:init-plugins))
-	(cli-loop))
+       (progn
+	 (init-commands)
+	 (setf globals:*db* (sqlite:connect globals:+db-file+))
+	 (sqlite:execute-non-query globals:*db*
+				   "create table if not exists files (
+								      ID        INTEGER PRIMARY KEY AUTOINCREMENT,
+								      NAME      TEXT NOT NULL,
+								      FILEPATH  TEXT NOT NULL);")
+	 (loading:load-all-plugins (loading:init-plugins))
+	 (handler-case (cli-loop)
+	   (error (e) (format t "~&"))))
     (progn
       (sqlite:disconnect globals:*db*)
-      (format t "something threw an error"))))
+      (uiop:quit))))
