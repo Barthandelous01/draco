@@ -6,6 +6,13 @@
 
 ;;; util functions for the cli
 
+(defun words (string)
+  "An internet-based equivalent to haskell's 'words' function"
+  (loop for i = 0 then (1+ j)
+        as j = (position #\Space string :start i)
+        collect (subseq string i j)
+        while j))
+
 (defun bulk-copy (infile outfile)
   "Directly copies a file with chunks.
    https://riptutorial.com/common-lisp/example/18886/copying-a-file"
@@ -19,6 +26,9 @@
 					    while (plusp bytes-read)
 					    do (write-sequence buffer outstream :end bytes-read)))))))
 
+
+;;; cli-specific commands
+
 (defun init-commands ()
   "This is a hackish way to set this up, but it's the only reasonable way."
   (setf globals:*command-list*
@@ -30,35 +40,41 @@
   (setf globals:*command-list*
 	(push `("quit" ,#'(lambda (_) (error "quiting")) "quits draco") globals:*command-list*)))
 
-(defun words (string)
-  "An internet-based equivalent to haskell's 'words' function"
-  (loop for i = 0 then (1+ j)
-        as j = (position #\Space string :start i)
-        collect (subseq string i j)
-        while j))
+
+
+(define-condition unknown-command-error (error)
+  ((text :initarg :text :reader :text)))
+
+(defun cli-parse ()
+  "The cli parser function. Much more elegant than todo-list's."
+  (format t "~&~a"
+	  (concatenate 'string globals:*current-filename* globals:+prompt+))
+  (finish-output)
+  (let* ((line (words (read-line)))
+	 (command (first line))
+	 (args (rest line)))
+    (loop for x in globals:*command-list* do
+	  (if (string= (first x) command)
+	      (progn
+		(funcall (second x) args)
+		(return-from cli-parse t))))
+    (error 'unknown-command-error :text command)))
 
 (defun cli-loop ()
-  "the loop that runs the CLI"
-  (handler-case
-      (loop
-       (format t "~&~a"
-	       (concatenate 'string globals:*current-filename* globals:+prompt+))
-       (finish-output)
-       (let* ((line (words (read-line)))
-	      (command (first line))
-	      (args (rest line)))
-	 (loop for x in globals:*command-list* do
-	       (if (string= (first x) command)
-		   (funcall (second x) args))))))
-  (error () (error "exiting")))
+  "A loop around the cli-parser function which allows for better error handling"
+  (loop
+   (handler-case (cli-parse)
+     (unknown-command-error (err) (format t "Unknown command ~a~%" (slot-value err 'text)))
+     (error (e) (error e)))))
 
 
 ;;; builtin functions for draco itself. These could be implimented as plugins,
 ;;; but that would really be a pain.
+
 (defun help (_)
   "This prints help for all loaded plugins and builtin commands"
   (loop for y in globals:*command-list* do
-    (format t "~a: ~a~&" (first y) (third y))))
+	(format t "~a: ~a~&" (first y) (third y))))
 
 (defun open-project (args)
   "This basically loads the 'current file' variable from the sqlite db"
@@ -83,6 +99,8 @@
       (sqlite:execute-non-query globals:*db* "insert into files (NAME, FILEPATH) values (?, ?)" name dest)))
   (finish-output))
 
+;;; main; toplevel entry point
+
 (defun main ()
   "The main function. Runs the main loop, plus some init and shutdown."
   (unwind-protect
@@ -95,7 +113,7 @@
 			           FILEPATH  TEXT NOT NULL);")
 	(loading:load-all-plugins (loading:init-plugins))
 	(handler-case (cli-loop)
-	  (error (e) (format t "~&"))))
+	  (error (e) (terpri))))
     (progn
       (sqlite:disconnect globals:*db*)
       (uiop:quit))))
