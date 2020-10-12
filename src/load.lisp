@@ -28,12 +28,13 @@
 (defun load-all-plugins (plugins)
   "Runs init on all of the plugins in plugin-list"
   (loop for y in plugins do
-    (progn
-      (load (concatenate 'string globals:+plugin-folder+ "/" (symbol-name y) ".lisp"))
-      (loop for x in (all-function-symbols y)
-	    do (if (string= x 'init)
-		   (setf globals:*command-list*
-			 (funcall x globals:*command-list*)))))))
+	(progn
+	  (load (merge-pathnames globals:+plugin-folder+
+				 (make-pathname :name (string-downcase (symbol-name y)) :type "lisp")))
+	  (loop for x in (all-function-symbols y)
+		do (if (string= x 'init)
+		       (setf globals:*command-list*
+			     (funcall x globals:*command-list*)))))))
 
 (defun init-plugins ()
   "Read from the index file into a list of plugins to use"

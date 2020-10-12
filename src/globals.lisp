@@ -5,6 +5,7 @@
 (defpackage :barthandelous.globals
   (:use :cl)
   (:export
+   :+config-folder+
    :*current-file*
    :*db*
    :*command-list*
@@ -17,19 +18,29 @@
   (:nicknames :globals))
 (in-package :globals)
 
-(defparameter +config-folder+ (concatenate 'string (uiop:getenv "HOME") "/.draco")
+(defparameter +config-folder+ (merge-pathnames
+			       (make-pathname :directory '(:relative ".draco"))
+			       (make-pathname :directory (uiop:getenv "HOME")))
   "The config folder that draco's config and plugins live in")
 
-(defparameter +plugin-folder+ (concatenate 'string +config-folder+ "/plugins")
+(defparameter +plugin-folder+ (merge-pathnames
+			       (make-pathname :directory '(:relative "plugins"))
+			       +config-folder+)
   "The folder where draco's plugins live")
 
-(defparameter +plugin-file+ (concatenate 'string +config-folder+ "/index.lisp")
+(defparameter +plugin-file+ (merge-pathnames
+			     (make-pathname :name "index" :type "lisp")
+			     +config-folder+)
   "The file that the list of plugins lives in")
 
-(defparameter +binary-folder+ (concatenate 'string +config-folder+ "/bin")
+(defparameter +binary-folder+ (merge-pathnames
+			       (make-pathname :directory '(:relative "bin"))
+			       +config-folder+)
   "Where the live binaries live")
 
-(defparameter +db-file+ (concatenate 'string +config-folder+ "/draco.db")
+(defparameter +db-file+ (merge-pathnames
+			 (make-pathname :name "draco" :type "db")
+			 +config-folder+)
   "The file where the sqlite db lives")
 
 (defparameter +prompt+ " $ "
