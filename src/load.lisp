@@ -1,7 +1,10 @@
 (defpackage :barthandelous.load
   (:use :cl)
   (:nicknames :loading)
-  (:export :load-all-plugins :init-plugins))
+  (:export
+   :load-all-plugins
+   :init-plugins
+   :add-to-arglist))
 (in-package :loading)
 
 ;;;; http://reference-error.org/2015/08/30/common-lisp-finding-all-functions-in-a-package.html
@@ -35,5 +38,10 @@
 (defun init-plugins ()
   "Read from the index file into a list of plugins to use"
   (with-open-file (in globals:+plugin-file+)
-    (with-standard-io-syntax
-      (read in))))
+		  (with-standard-io-syntax
+		   (read in))))
+
+(defmacro add-to-arglist (arglist &rest items)
+  "A deceptively simple macro to simplify adding large numbers of commands.
+   Also available to plugins."
+  `(progn ,@(mapcar #'(lambda (x) `(push ,x ,arglist)) items)))

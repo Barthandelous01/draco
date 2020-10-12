@@ -31,16 +31,11 @@
 
 (defun init-commands ()
   "This is a hackish way to set this up, but it's the only reasonable way."
-  (setf globals:*command-list*
-	(push `("help" ,#'help "prints this message") globals:*command-list*))
-  (setf globals:*command-list*
-	(push `("open" ,#'open-project "[name]: opens a new project") globals:*command-list*))
-  (setf globals:*command-list*
-	(push `("new" ,#'new-project "[name] [path]: starts a new project") globals:*command-list*))
-  (setf globals:*command-list*
-	(push `("quit" ,#'(lambda (_) (error "quiting")) "quits draco") globals:*command-list*)))
-
-
+  (loading:add-to-arglist globals:*command-list*
+			  `("help" ,#'help "prints this message")
+			  `("new" ,#'new-project "[name] [path]: starts a new project")
+			  `("open" ,#'open-project "[name]: opens a new project")
+			  `("quit" ,#'(lambda (_) (error "quiting")) "quits draco")))
 
 (define-condition unknown-command-error (error)
   ((text :initarg :text :reader :text)))
