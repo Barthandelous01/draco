@@ -1,7 +1,7 @@
 (defpackage :barthandelous.main
   (:use :cl)
   (:nicknames :main)
-  (:export :main :init-commands :cli-loop :help))
+  (:export :main :init-commands :cli-loop :help :new-project))
 (in-package :barthandelous.main)
 
 ;;; util functions for the cli
@@ -16,10 +16,10 @@
 (defun bulk-copy (infile outfile)
   "Directly copies a file with chunks.
    https://riptutorial.com/common-lisp/example/18886/copying-a-file"
-  (with-open-file (instream infile :direction :input :element-type '(unsigned-byte 8)
+  (with-open-file (instream (ensure-directories-exist infile) :direction :input :element-type '(unsigned-byte 8)
                             :if-does-not-exist nil)
 		  (when instream
-		    (with-open-file (outstream outfile :direction :output :element-type '(unsigned-byte 8)
+		    (with-open-file (outstream (ensure-directories-exist outfile) :direction :output :element-type '(unsigned-byte 8)
 					       :if-exists :supersede)
 				    (let ((buffer (make-array 8192 :element-type '(unsigned-byte 8))))
 				      (loop for bytes-read = (read-sequence buffer instream)
@@ -87,11 +87,12 @@
   "this starts a new project"
   (let* ((name (first args))
 	 (file (second args))
-	 (dest (concatenate 'string globals:+binary-folder+ "/" name)))
+	 (dest (merge-pathnames name
+				globals:+binary-folder+)))
     (progn
       (format t "Copying ~a to ~a~%" file dest)
       (bulk-copy file dest)
-      (sqlite:execute-non-query globals:*db* "insert into files (NAME, FILEPATH) values (?, ?)" name dest)))
+      (sqlite:execute-non-query globals:*db* "insert into files (NAME, FILEPATH) values (?, ?)" name (namestring dest))))
   (finish-output))
 
 ;;; main; toplevel entry point
@@ -101,7 +102,7 @@
   (unwind-protect
       (progn
 	(init-commands)
-	(setf globals:*db* (sqlite:connect globals:+db-file+))
+	(setf globals:*db* (sqlite:connect (ensure-directories-exist globals:+db-file+)))
 	(sqlite:execute-non-query globals:*db* "create table if not exists files (
 				   ID        INTEGER PRIMARY KEY AUTOINCREMENT,
 				   NAME      TEXT NOT NULL,
