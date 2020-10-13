@@ -1,0 +1,4 @@
+#+TITLE: plugins
+
+These are some example plugins. Most of these are relatively
+simple, but much more complicated ones can be created.
