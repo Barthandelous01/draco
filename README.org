@@ -1,3 +1,71 @@
 #+TITLE: draco
 
 A minimal malware analysis framework powered by plugins.
+
+* Usage
+
+  Draco is meant to be installed into a local directory such as /usr/local/bin.
+  Once it's there, just run draco from the command line.
+  #+BEGIN_SRC
+  $ draco
+  #+END_SRC
+
+* Installation
+
+  Draco can be built and installed by most major common lisp distributions.
+  Exact methods will vary, but an example to build for sbcl is
+  #+BEGIN_SRC bash
+    sbcl
+	--eval "(ql:quickload :sqlite)"
+	--load draco.asd
+	--eval "(asdf:load-system :draco)"
+	--eval '(sb-ext:save-lisp-and-die "draco"
+			        :executable t
+				:toplevel (function main:main))'
+  #+END_SRC
+  Quicklisp is a requirement for draco's sqlite3 database where it stores
+  projects and binary files.
+
+* Plugins
+
+  The core functionality of draco is implimented in common lisp plugins.
+  Some examples of plugins can be found in the plugins/ folder in the
+  project root. Here is a simple sketch of the necessary components.
+
+
+  #+BEGIN_SRC common-lisp
+    ; Filename: /home/USERNAME/.draco/plugins/plugin-name.lisp
+    (defpackage :plugin-name
+      (:use :cl)
+      (:exports :main :init)) ; init is the most important function; every
+			      ; plugin must export it.
+    (in-package :plugin-name)
+
+    (defun init (arglist)
+      "the init function pushes a list of the form 
+       `(command ,#'function documentation) to the passed variable arglist.
+       The convenience macro loading:add-to-arglist can push several such lists."
+      (loading:add-to-arglist arglist
+	`("example" ,#'main "Prints an example")))
+
+    (defun main (x)
+      "every userland function takes a list of args. Think of it like a 
+       forced &rest parameter. If you don't use it, consider muffling
+       style warnings at the beginning of the file."
+      (format t "I got an arglist! Here it is: ~a" x))
+  #+END_SRC
+
+  Each plugin, to be loaded, must be accompanied by the corresponding symbol
+  decleration in /home/USERNAME/.draco/index.lisp, which, to just load the
+  above plugin, would look something like this:
+
+  #+BEGIN_SRC common-lisp
+    (:plugin-name)
+  #+END_SRC
+
+* Contributing
+
+  Contributions are what make the open source community such an amazing place
+  to be learn, inspire, and create. Any contributions you make are
+  greatly appreciated. Please prefer implimenting functionality as a plugin
+  rather than as a part of the core; a small codebase is a readable codebase.

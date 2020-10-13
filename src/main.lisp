@@ -11,7 +11,7 @@
   (loop for i = 0 then (1+ j)
         as j = (position #\Space string :start i)
         collect (subseq string i j)
-        while j))
+	while j))
 
 (defun bulk-copy (infile outfile)
   "Directly copies a file with chunks.
@@ -30,7 +30,7 @@
 ;;; cli-specific commands
 
 (defun init-commands ()
-  "This is a hackish way to set this up, but it's the only reasonable way."
+  "This function is basically the init for the 'core' plugin and functionality."
   (loading:add-to-arglist globals:*command-list*
 			  `("help" ,#'help "prints this message")
 			  `("new" ,#'new-project "[name] [path]: starts a new project")
