@@ -8,7 +8,7 @@
   :maintainer "Barthandelous01"
   :author "Barthandelous01"
   :license "3-Clause BSD"
-  :depends-on (:dexador :sqlite)
+  :depends-on (:uiop :sqlite)
   :description "A malware analysis framework"
   :long-description "A minimal, plugin based malware analysis framework"
   :serial t
