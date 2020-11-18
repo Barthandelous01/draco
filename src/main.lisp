@@ -17,14 +17,14 @@
   "Directly copies a file with chunks.
    https://riptutorial.com/common-lisp/example/18886/copying-a-file"
   (with-open-file (instream (ensure-directories-exist infile) :direction :input :element-type '(unsigned-byte 8)
-                            :if-does-not-exist nil)
-		  (when instream
-		    (with-open-file (outstream (ensure-directories-exist outfile) :direction :output :element-type '(unsigned-byte 8)
-					       :if-exists :supersede)
-				    (let ((buffer (make-array 8192 :element-type '(unsigned-byte 8))))
-				      (loop for bytes-read = (read-sequence buffer instream)
-					    while (plusp bytes-read)
-					    do (write-sequence buffer outstream :end bytes-read)))))))
+							      :if-does-not-exist nil)
+    (when instream
+      (with-open-file (outstream (ensure-directories-exist outfile) :direction :output :element-type '(unsigned-byte 8)
+								    :if-exists :supersede)
+	(let ((buffer (make-array 8192 :element-type '(unsigned-byte 8))))
+	  (loop for bytes-read = (read-sequence buffer instream)
+		while (plusp bytes-read)
+		do (write-sequence buffer outstream :end bytes-read)))))))
 
 
 ;;; cli-specific commands
@@ -69,7 +69,7 @@
 (defun help (_)
   "This prints help for all loaded plugins and builtin commands"
   (loop for y in globals:*command-list* do
-	(format t "~a: ~a~&" (first y) (third y))))
+	(format t "~15a: ~a~&" (first y) (third y))))
 
 (defun open-project (args)
   "This basically loads the 'current file' variable from the sqlite db"

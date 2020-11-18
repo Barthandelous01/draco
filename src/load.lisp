@@ -48,4 +48,6 @@
 (defmacro add-to-arglist (arglist &rest items)
   "A deceptively simple macro to simplify adding large numbers of commands.
    Also available to plugins."
-  `(progn ,@(mapcar #'(lambda (x) `(push ,x ,arglist)) items)))
+  `(progn
+     ,@(mapcar #'(lambda (x)
+		   `(push ,x ,arglist)) items)))
